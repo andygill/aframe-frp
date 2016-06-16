@@ -1,0 +1,31 @@
+{
+  "name": "aframe-frp",
+  "version": "1.0.0",
+  "description": "My Bookmarklets",
+  "private": true,
+  "main": "build/index.js",
+  "directories": {
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "browserify": "^12.0.1",
+    "mkdirp": "0.5.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": 
+      "mkdirp dist/ &&  browserify js/aframe-frp.js -o dist/aframe-frp.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andygill/aframe-frp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "BSD3",
+  "bugs": {
+    "url": "https://github.com/andygill/aframe-frp/issues"
+  },
+  "homepage": "https://github.com/andygill/aframe-frp"
+}
