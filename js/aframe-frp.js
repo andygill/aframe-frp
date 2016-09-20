@@ -18,12 +18,14 @@ function findParentGUI(el) {
 
 AFRAME.registerComponent('selection-folder', {
    schema: {
-     name: { default: 'folder', type: 'string' },
+     name: { default: 'folder', type: 'string' }, // for some reason, missing out name messes the order
      open: { default: true, type: 'boolean' }
    },
    init: function () {
+     console.log("init sel folder");
      var g = findParentGUI(this.el);
      var name = this.data.name;
+     console.log("name",name)
      var count = 2;
      while(g.__folders[name] !== undefined) {
          name = this.data.name + " (" + count++ + ")"
@@ -37,12 +39,23 @@ AFRAME.registerComponent('selection-folder', {
    }
 });
 
+AFRAME.registerPrimitive('a-selection-folder',{
+ defaultComponents: {
+     "selection-folder": {}
+   },
+ mappings: {
+   name:  'selection-folder.name',
+   value: 'selection-folder.value'
+ }
+});
+
 AFRAME.registerComponent('color-selector', {
    schema: {
-     value: { default: '#FFF', type: 'string' },
+     value: { default: '#1345FF', type: 'string' },
      name: { default: 'color', type: 'string' }
    },
    init: function () {
+     console.log("init col sel");
      var g = findParentGUI(this.el);
      var el = this.el;
      function change(value) {
@@ -52,11 +65,19 @@ AFRAME.registerComponent('color-selector', {
          el.setAttribute('color-selector','value',value);
        }
      }
-     g.addColor(this.data, 'value').name(this.data.name).onChange(change);
+     this.controller = g.addColor(this.data, 'value').name(this.data.name).onChange(change);
+     this.gui_data = this.data;
+   },
+   update: function() {
+     this.gui_data.value = this.data.value;
+     this.controller.updateDisplay();
    }
-});
+ });
 
 AFRAME.registerPrimitive('a-color-selector',{
+  defaultComponents: {
+    "color-selector": {}
+  },
   mappings: {
     name:  'color-selector.name',
     value: 'color-selector.value'
@@ -80,7 +101,21 @@ AFRAME.registerComponent('number-selector', {
      var g = findParentGUI(this.el);
      var el = this.el;
 
+     this.controller = g.add(this.data, 'value');
+   },
+   update: function() {
+
+     var that = this;
+     this.controller = this.controller.name(this.data.name);
+     ['min','max','step'].forEach(function(o) {
+         if (that.data[o] != null) {
+           that.controller = that.controller[o](that.data[o]);
+         }
+       });
+
+     var el = this.el;
      var change = function(value) {
+       console.log('change',value)
        if (el.tagName == "A-NUMBER-SELECTOR") { 
          el.setAttribute('value',value);
          el.setAttribute('type','number');
@@ -88,15 +123,8 @@ AFRAME.registerComponent('number-selector', {
          el.setAttribute('number-selector','value',value);
        }
      };
-     change(this.data.value)
-     var s = g.add(this.data, 'value').name(this.data.name).onChange(change);
 
-     var that = this;
-     ['min','max','step'].forEach(function(o) {
-       if (that.data[o] != null) {
-         s = s[o](that.data[o]);
-       }
-     });
+     this.controller.onChange(change);
    }
 });
 
@@ -128,7 +156,7 @@ AFRAME.registerComponent('behavior', {
          var value = el.getAttribute("value");
          var type  = el.getAttribute("type");
          if (type == 'number') {
-           return parseInt(value);
+           return parseFloat(value);
          }
          return value;
        },
