@@ -1,2 +1,9 @@
 # aframe-frp
-FRP for aframe
+
+Functional Reactive Programming for AFrame.
+
+
+
+
+
+

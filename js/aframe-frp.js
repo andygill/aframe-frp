@@ -1,3 +1,5 @@
+var dat = require("dat-gui");
+
 var datGUI;
 
 function findParentGUI(el) {
