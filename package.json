@@ -6,6 +6,8 @@
   "main": "build/index.js",
   "directories": {},
   "dependencies": {
+    "aframe": "^0.3.1",
+    "budo": "^9.2.0",
     "dat-gui": "^0.5.0"
   },
   "devDependencies": {
@@ -14,7 +16,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "mkdirp dist/ &&  browserify js/aframe-frp.js -o dist/aframe-frp.js"
+    "build": "mkdirp dist/ &&  browserify js/aframe-frp.js -o dist/aframe-frp.js",
+    "dev": "budo examples/main.js:build.js --dir examples --port 8008 --live --open"
   },
   "repository": {
     "type": "git",

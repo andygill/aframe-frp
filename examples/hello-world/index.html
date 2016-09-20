@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello, World! • A-Frame</title>
+    <meta name="description" content="Hello, World! • A-Frame">
+    <script src="../build.js"></script>
+  </head>
+  <body>
+    <a-scene>
+
+      <a-sphere position="0 1.25 -1" radius="1.25" color="#EF2D5E"
+		behavior="position = vec3(position.x,2 - Easing.Quadratic.In(saw (now/1000)),position.z)">
+      </a-sphere>
+      <a-box position="-1 0.5 1" rotation="0 0 0" width="1" height="1" depth="1"  color="#4CC3D9"
+	     behavior="rotation = vec3(rotation.x,now / 50,rotation.z)">
+      </a-box>
+
+      <a-cylinder id="XX" position="1 0.75 1" radius="0.5" height="1.5" color="rgb(200,200,50)"
+	     behavior="color = lerp('#FFC65D','#C65DFF',Easing.Cubic.InOut(saw(now / 1000)))">
+		  >
+      </a-cylinder>
+      <a-plane rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
+
+      <a-sky color="#ECECEC"></a-sky>
+      <a-entity position="0 0 3.8">
+        <a-camera></a-camera>
+      </a-entity>
+    </a-scene>
+  </body>
+</html>

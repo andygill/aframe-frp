@@ -114,7 +114,8 @@ AFRAME.registerPrimitive('a-number-selector',{
 AFRAME.registerComponent('behavior', {
   schema: { default: "", type: 'string' },
   init: function () {
-     console.log('frp',this.data);
+	    //     console.log('frp',this.data);
+     this.now = Date.now();
   },
   tick: function(o) {
     var self = this;
@@ -130,7 +131,25 @@ AFRAME.registerComponent('behavior', {
            return parseInt(value);
          }
          return value;
-      }
+       },
+       now: Date.now() - self.now,
+       mod: function(o) { return o % 1; },
+       saw: function(o) { return Math.abs(((o + 1) % 2) - 1); },
+       once: function(o) { return Math.min(1,o); },
+       lerp: function(p0,p1,t) {
+	 if (typeof p0 == "number") {
+	     return ( p1 - p0 ) * t + p0;
+	 } else if (p0.x && p0.y && p1.z) {
+	     return { x: env.lerp(p0.x,p1.x,t),
+		      y: env.lerp(p0.y,p1.y,t),
+		      z: env.lerp(p0.z,p1.z,t) };
+	 } else { // assume color
+	     var c0 = new AFRAME.THREE.Color(p0);
+	     var c1 = new AFRAME.THREE.Color(p1);
+	     return "#" + c0.lerp(c1,t).getHexString();
+	 }
+       },
+       Easing: AFRAME.TWEEN.Easing
      };
 
     var self = this;
@@ -154,9 +173,9 @@ AFRAME.registerComponent('behavior', {
 
     Object.keys(this.el.attributes).forEach(function (ix) {
         var name = self.el.attributes[ix].name;
-//        console.log(ix,env[ix],copy[ix])
+	//        console.log(ix,env[ix],copy[ix])
         if (env[name] !== copy[name]) {
-//          console.log("updating",name,env[name],copy[name])
+	    //          console.log("updating",name,env[name],copy[name])
           self.el.setAttribute(name,env[name])
         }
       });
