@@ -9,12 +9,14 @@
   <body>
     <a-scene>
 
-      <a-number-selector id="sphere-position" name="sphere position" value="1.25" max="5" min="0" step="0.1">
-      </a-number-selector>
-      <a-number-selector id="box-rotation" name="box rotation" value="45" max="180" min="0" step="1">
-      </a-number-select>
-      <a-color-selector id="cylinder-color" name="cylinder color" value="#FFC65D">
-      </a-color-selector>
+      <a-selection-folder name="Hello">
+         <a-number-selector id="sphere-position" name="sphere position" value="1.25" max="5" min="0" step="0.1">
+         </a-number-selector>
+         <a-number-selector id="box-rotation" name="box rotation" value="45" max="180" min="0" step="1">
+         </a-number-selector>
+         <a-color-selector id="cylinder-color" name="cylinder color" value="#FFC65D">
+         </a-color-selector>
+      </a-selection-folder>
 
       <a-sphere position="0 1.25 -1" radius="1.25" color="#EF2D5E"
 		behavior="position = vec3(0,id('sphere-position'),-1)">

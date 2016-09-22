@@ -6,26 +6,25 @@ function findParentGUI(el) {
   // If the immeduate parent is a folder, use the folder.
   if (el.parentEl && 
     el.parentEl.components &&
-    el.parentEl.components['selection-folder']) {
+    el.parentEl.components['selection-folder'] &&
+    el.parentEl.components['selection-folder'].folder) {
     return el.parentEl.components['selection-folder'].folder
   } else {
     if (datGUI == undefined) {
        datGUI = new dat.GUI();       
     }
-    return datGUI;
+		return datGUI;
   }
 }
 
 AFRAME.registerComponent('selection-folder', {
    schema: {
-     name: { default: 'folder', type: 'string' }, // for some reason, missing out name messes the order
+     name: { type: 'string' }, // for some reason, missing out name messes the order
      open: { default: true, type: 'boolean' }
    },
    init: function () {
-     console.log("init sel folder");
      var g = findParentGUI(this.el);
      var name = this.data.name;
-     console.log("name",name)
      var count = 2;
      while(g.__folders[name] !== undefined) {
          name = this.data.name + " (" + count++ + ")"
@@ -55,7 +54,6 @@ AFRAME.registerComponent('color-selector', {
      name: { default: 'color', type: 'string' }
    },
    init: function () {
-     console.log("init col sel");
      var g = findParentGUI(this.el);
      var el = this.el;
      function change(value) {
@@ -93,11 +91,6 @@ AFRAME.registerComponent('number-selector', {
      step: { default: null, type: 'number' }
    },
    init: function () {
-//     console.log('number-selector',datGUI);
-//     console.log(this.data)
-     if (datGUI == undefined) {
-        datGUI = new dat.GUI();       
-     }
      var g = findParentGUI(this.el);
      var el = this.el;
 
@@ -115,7 +108,6 @@ AFRAME.registerComponent('number-selector', {
 
      var el = this.el;
      var change = function(value) {
-       console.log('change',value)
        if (el.tagName == "A-NUMBER-SELECTOR") { 
          el.setAttribute('value',value);
          el.setAttribute('type','number');
@@ -142,7 +134,6 @@ AFRAME.registerPrimitive('a-number-selector',{
 AFRAME.registerComponent('behavior', {
   schema: { default: "", type: 'string' },
   init: function () {
-	    //     console.log('frp',this.data);
      this.now = Date.now();
   },
   tick: function(o) {
@@ -201,9 +192,7 @@ AFRAME.registerComponent('behavior', {
 
     Object.keys(this.el.attributes).forEach(function (ix) {
         var name = self.el.attributes[ix].name;
-	//        console.log(ix,env[ix],copy[ix])
         if (env[name] !== copy[name]) {
-	    //          console.log("updating",name,env[name],copy[name])
           self.el.setAttribute(name,env[name])
         }
       });

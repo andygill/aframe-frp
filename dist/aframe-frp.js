@@ -7,19 +7,20 @@ function findParentGUI(el) {
   // If the immeduate parent is a folder, use the folder.
   if (el.parentEl && 
     el.parentEl.components &&
-    el.parentEl.components['selection-folder']) {
+    el.parentEl.components['selection-folder'] &&
+    el.parentEl.components['selection-folder'].folder) {
     return el.parentEl.components['selection-folder'].folder
   } else {
     if (datGUI == undefined) {
        datGUI = new dat.GUI();       
     }
-    return datGUI;
+		return datGUI;
   }
 }
 
 AFRAME.registerComponent('selection-folder', {
    schema: {
-     name: { default: 'folder', type: 'string' },
+     name: { type: 'string' }, // for some reason, missing out name messes the order
      open: { default: true, type: 'boolean' }
    },
    init: function () {
@@ -38,13 +39,24 @@ AFRAME.registerComponent('selection-folder', {
    }
 });
 
+AFRAME.registerPrimitive('a-selection-folder',{
+ defaultComponents: {
+     "selection-folder": {}
+   },
+ mappings: {
+   name:  'selection-folder.name',
+   value: 'selection-folder.value'
+ }
+});
+
 AFRAME.registerComponent('color-selector', {
    schema: {
-     value: { default: '#FFF', type: 'string' },
+     value: { default: '#1345FF', type: 'string' },
      name: { default: 'color', type: 'string' }
    },
    init: function () {
      var g = findParentGUI(this.el);
+		 hack = this;
      var el = this.el;
      function change(value) {
        if (el.tagName == "A-COLOR-SELECTOR") { 
@@ -53,11 +65,19 @@ AFRAME.registerComponent('color-selector', {
          el.setAttribute('color-selector','value',value);
        }
      }
-     g.addColor(this.data, 'value').name(this.data.name).onChange(change);
+     this.controller = g.addColor(this.data, 'value').name(this.data.name).onChange(change);
+     this.gui_data = this.data;
+   },
+   update: function() {
+     this.gui_data.value = this.data.value;
+     this.controller.updateDisplay();
    }
-});
+ });
 
 AFRAME.registerPrimitive('a-color-selector',{
+  defaultComponents: {
+    "color-selector": {}
+  },
   mappings: {
     name:  'color-selector.name',
     value: 'color-selector.value'
@@ -73,14 +93,22 @@ AFRAME.registerComponent('number-selector', {
      step: { default: null, type: 'number' }
    },
    init: function () {
-//     console.log('number-selector',datGUI);
-//     console.log(this.data)
-     if (datGUI == undefined) {
-        datGUI = new dat.GUI();       
-     }
      var g = findParentGUI(this.el);
      var el = this.el;
 
+     this.controller = g.add(this.data, 'value');
+   },
+   update: function() {
+
+     var that = this;
+     this.controller = this.controller.name(this.data.name);
+     ['min','max','step'].forEach(function(o) {
+         if (that.data[o] != null) {
+           that.controller = that.controller[o](that.data[o]);
+         }
+       });
+
+     var el = this.el;
      var change = function(value) {
        if (el.tagName == "A-NUMBER-SELECTOR") { 
          el.setAttribute('value',value);
@@ -89,15 +117,8 @@ AFRAME.registerComponent('number-selector', {
          el.setAttribute('number-selector','value',value);
        }
      };
-     change(this.data.value)
-     var s = g.add(this.data, 'value').name(this.data.name).onChange(change);
 
-     var that = this;
-     ['min','max','step'].forEach(function(o) {
-       if (that.data[o] != null) {
-         s = s[o](that.data[o]);
-       }
-     });
+     this.controller.onChange(change);
    }
 });
 
@@ -115,7 +136,7 @@ AFRAME.registerPrimitive('a-number-selector',{
 AFRAME.registerComponent('behavior', {
   schema: { default: "", type: 'string' },
   init: function () {
-     console.log('frp',this.data);
+     this.now = Date.now();
   },
   tick: function(o) {
     var self = this;
@@ -123,15 +144,36 @@ AFRAME.registerComponent('behavior', {
     var oldAttr = target.getAttribute(this.data.attribute);
     var env =
      { vec3: function(x,y,z) { return {x:x,y:y,z:z}; },
+       editColor: function(c) {
+         return c;
+       },
        id: function(o) { 
          var el = document.getElementById(o);
          var value = el.getAttribute("value");
          var type  = el.getAttribute("type");
          if (type == 'number') {
-           return parseInt(value);
+           return parseFloat(value);
          }
          return value;
-      }
+       },
+       now: Date.now() - self.now,
+       mod: function(o) { return o % 1; },
+       saw: function(o) { return Math.abs(((o + 1) % 2) - 1); },
+       once: function(o) { return Math.min(1,o); },
+       lerp: function(p0,p1,t) {
+	 if (typeof p0 == "number") {
+	     return ( p1 - p0 ) * t + p0;
+	 } else if (p0.x && p0.y && p1.z) {
+	     return { x: env.lerp(p0.x,p1.x,t),
+		      y: env.lerp(p0.y,p1.y,t),
+		      z: env.lerp(p0.z,p1.z,t) };
+	 } else { // assume color
+	     var c0 = new AFRAME.THREE.Color(p0);
+	     var c1 = new AFRAME.THREE.Color(p1);
+	     return "#" + c0.lerp(c1,t).getHexString();
+	 }
+       },
+       Easing: AFRAME.TWEEN.Easing
      };
 
     var self = this;
@@ -155,9 +197,7 @@ AFRAME.registerComponent('behavior', {
 
     Object.keys(this.el.attributes).forEach(function (ix) {
         var name = self.el.attributes[ix].name;
-//        console.log(ix,env[ix],copy[ix])
         if (env[name] !== copy[name]) {
-//          console.log("updating",name,env[name],copy[name])
           self.el.setAttribute(name,env[name])
         }
       });
